@@ -102,6 +102,10 @@ if txt == -1,
     cerror = 'Only one line found in conditions file (assumed to be a header)';
     return
 end
+% MAC, Oct 13 2014
+if isempty(txt)
+    txt = fgetl(fid);
+end
 
 sinebank = [];
 while txt ~= -1,
