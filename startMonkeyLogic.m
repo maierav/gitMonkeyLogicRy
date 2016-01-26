@@ -29,7 +29,7 @@ end
 
 % get current directory which should contain ML versions and Tasks
 ML_folder = pwd;
-Tasks_folder = [ML_folder, filesep, MonkeyLogic, ML_ver, filesep 'Tasks', filesep];
+Tasks_folder = [ML_folder, filesep, 'MonkeyLogic', ML_ver, filesep 'Tasks', filesep];
 Utils_folder = [ML_folder, filesep, 'UTILS', filesep];
 
 % put monkeylogic on path
