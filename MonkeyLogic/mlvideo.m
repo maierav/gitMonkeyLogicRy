@@ -38,6 +38,13 @@ function result = mlvideo(fxn, varargin)
 %  Created by WA January, 2008
 %  Modified 8/12/08 -WA (added 'waitflip' fxn)
 
+%%%%%% MAIER LAB CUSTOM GAMMA CORRECTION %%%%%%%%%%%%%%%%%%%%%%%%%%%
+% !! monitor name for gamma correction !! KD Dec 2015 % 
+% MUST also change below inside "function rgb = rgbval(rgb_in)" 
+labmonitor = '022MIT'; %'022NEC'; 
+fprintf('<<< Maier Lab >>> using %s for GammaCorrection\n',labmonitor)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 result = [];
 fxn = lower(fxn);
 
@@ -176,6 +183,12 @@ switch fxn
         
         if ~isa(imdata, 'uint32'),
             imdata = double(imdata);
+            % gamma correct, Maier Lab
+            Rimdata = gammaCorrect(imdata(:,:,1),labmonitor,1);
+            Gimdata = gammaCorrect(imdata(:,:,2),labmonitor,2);
+            Bimdata = gammaCorrect(imdata(:,:,3),labmonitor,3);
+            clear imdata;
+            imdata = cat(3,Rimdata,Gimdata,Bimdata);
             if ~any(imdata(:) > 1),
                 imdata = ceil(255*imdata);
             end
@@ -294,10 +307,21 @@ switch fxn
 		xglsetcursor(P);
 end
 
+
+
 function rgb = rgbval(rgb_in)
 
+% alpha = 0;
+% r = rgb_in(1);
+% g = rgb_in(2);
+% b = rgb_in(3);
+% rgb = bin2dec([dec2bin(alpha, 8) dec2bin(r, 8) dec2bin(g, 8) dec2bin(b, 8)]);
+
+labmonitor = '022MIT'; % MAIER LAB Gamma Correction
 alpha = 0;
-r = rgb_in(1);
-g = rgb_in(2);
-b = rgb_in(3);
+R = rgb_in(1); r = gammaCorrect(R,labmonitor,1); 
+G = rgb_in(2); g = gammaCorrect(G,labmonitor,2); 
+B = rgb_in(3); b = gammaCorrect(B,labmonitor,3); 
 rgb = bin2dec([dec2bin(alpha, 8) dec2bin(r, 8) dec2bin(g, 8) dec2bin(b, 8)]);
+
+
