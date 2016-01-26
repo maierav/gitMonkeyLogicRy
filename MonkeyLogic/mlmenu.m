@@ -4207,6 +4207,7 @@ MLConfig.PersonalHardwareSettings = strcmp(get(findobj(gcf, 'tag', 'menubar_pers
 
 cfgfile = get(findobj(gcf, 'tag', 'configfilename'), 'string');
 cfgfile = [MLPrefs.Directories.ExperimentDirectory cfgfile];
+MLConfig.FileName = cfgfile; %MAC, July 2014
 
 try
     save(cfgfile, 'MLConfig');
