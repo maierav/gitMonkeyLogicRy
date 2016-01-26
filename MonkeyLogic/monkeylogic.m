@@ -538,6 +538,9 @@ TrialRecord.LastTrialCodes.CodeNumbers = [];
 TrialRecord.LastTrialCodes.CodeTimes = [];
 TrialRecord.DataFile = datafile;
 TrialRecord.SimulationMode = 0;
+TrialRecord.ScreenInfo = ScreenInfo;  %MAC, July 2014
+TrialRecord.ConfigFileName = MLConfig.FileName; %MAC, July 2014
+TrialRecord.BhvFileName = MLConfig.DataFile; %MAC, July 2014
 
 AllCodes.CodeNumbers = [];
 
