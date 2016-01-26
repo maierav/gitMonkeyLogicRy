@@ -525,7 +525,10 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 
                                 xv = data(firstsample:lastsample, xchan);
                                 yv = data(firstsample:lastsample, ychan);
-                                                                                                            
+                                 
+                                % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
+                                savestereoeyecal(targetlist(i,1), targetlist(i,2), xv, yv, ScreenInfo); %MAC!
+                                
                                 max_xv = min(xv);
                                 min_xv = max(xv);
                                 max_yv = min(yv);
