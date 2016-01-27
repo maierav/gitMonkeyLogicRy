@@ -302,6 +302,8 @@ while txt ~= -1,
                     end
                     
                 elseif strcmp(obtype, 'gen'),
+                    % add experiment directory to path as that is the likley location of the gen function
+                    addpath(MLPrefs.Directories.ExperimentDirectory); %MAC, July 2014                    
                     
                     if numatt > 3 || numatt == 2,
                         cerror = sprintf('Must have 1 or 3 arguments, function name & optionally xpos & ypos, for "gen" object (condition #%i)', condnum);
