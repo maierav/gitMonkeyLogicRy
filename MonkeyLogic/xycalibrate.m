@@ -526,8 +526,6 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 xv = data(firstsample:lastsample, xchan);
                                 yv = data(firstsample:lastsample, ychan);
                                  
-                                % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
-                                savestereoeyecal(targetlist(i,1), targetlist(i,2), xv, yv, ScreenInfo); %MAC!
                                 
                                 max_xv = min(xv);
                                 min_xv = max(xv);
@@ -537,21 +535,31 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 median_yv = median(yv);
                                 mean_xv = nanmean(xv);
                                 mean_yv = nanmean(yv);
+                                
+                                
 
                                	switch calibrationPointTypeIndex,
 
                                     case 1,
                                         [xp yp] = tformfwd(SigTransform, min_xv, min_yv);
                                         disp('<<< MonkeyLogic >>> Using minimum value')
+                                        % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
+                                        savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), min_xv, min_xv, ScreenInfo); %MAC!
                                     case 2,
                                         [xp yp] = tformfwd(SigTransform, max_xv, max_yv);
                                         disp('<<< MonkeyLogic >>> Using maximum value')
+                                        % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
+                                        savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), max_xv, max_yv, ScreenInfo); %MAC!
                                     case 3,
                                         [xp yp] = tformfwd(SigTransform, mean_xv, mean_yv);
                                         disp('<<< MonkeyLogic >>> Using mean value')
+                                        % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
+                                        savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), mean_xv, mean_yv, ScreenInfo); %MAC!
                                     case 4,
                                         [xp yp] = tformfwd(SigTransform, median_xv, median_yv);
                                         disp('<<< MonkeyLogic >>> Using median value')
+                                        % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
+                                        savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), median_xv, median_yv, ScreenInfo); %MAC!
 
                                 end
                      
