@@ -40,9 +40,7 @@ function result = mlvideo(fxn, varargin)
 
 %%%%%% MAIER LAB CUSTOM GAMMA CORRECTION %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % !! monitor name for gamma correction !! KD Dec 2015 % 
-% MUST also change below inside "function rgb = rgbval(rgb_in)" 
-labmonitor = '022MIT'; %'022NEC'; 
-fprintf('<<< Maier Lab >>> using %s for GammaCorrection\n',labmonitor)
+labmonitor = '022MIT'; %'022NEC';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 result = [];
@@ -103,6 +101,7 @@ switch fxn
     case 'init',
 
         disp('<<< MonkeyLogic >>> Initialized XGL - DirectX 9 fullscreen graphics layer for Matlab...')
+        fprintf('<<<  Maier Lab  >>> using %s for GammaCorrection\n',labmonitor) %MAC, JAn 2016
 
         xglrelease;
         xglinit;
@@ -239,7 +238,7 @@ switch fxn
         if max(bgcolor)<=1 && max(bgcolor) > 0
             bgcolor = bgcolor*255;
         end
-        xglclear(devicenum, backbuffernum, rgbval(bgcolor));
+        xglclear(devicenum, backbuffernum, rgbval(bgcolor,labmonitor));
         
     case 'showcursor',  % this will shows/hides the arrow pointer
         
@@ -309,7 +308,7 @@ end
 
 
 
-function rgb = rgbval(rgb_in)
+function rgb = rgbval(rgb_in,labmonitor)
 
 % alpha = 0;
 % r = rgb_in(1);
@@ -317,7 +316,6 @@ function rgb = rgbval(rgb_in)
 % b = rgb_in(3);
 % rgb = bin2dec([dec2bin(alpha, 8) dec2bin(r, 8) dec2bin(g, 8) dec2bin(b, 8)]);
 
-labmonitor = '022MIT'; % MAIER LAB Gamma Correction
 alpha = 0;
 R = rgb_in(1); r = gammaCorrect(R,labmonitor,1); 
 G = rgb_in(2); g = gammaCorrect(G,labmonitor,2); 
