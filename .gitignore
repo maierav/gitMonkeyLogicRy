@@ -1,6 +1,6 @@
 # MonkeyLogic #
 ###############
-runtime/
+MonkeyLogic/runtime/
 UTILS/gammacorrectiondata/
 *.bhv
 *.g*

@@ -34,13 +34,16 @@ Utils_folder = [ML_folder, filesep, 'UTILS', filesep];
 
 % put monkeylogic on path
 addpath(genpath(sprintf('%s\\MonkeyLogic%s',ML_folder,ML_ver)));
+% remove subdirectory "tasks" and "docs" 
+rmpath(genpath(Tasks_folder));
+rmpath(genpath([ML_folder, filesep, 'MonkeyLogic', ML_ver, filesep 'Docs', filesep]))
 % add UTILS folder to path if it exists
 if exist(Utils_folder,'dir') == 7
     addpath(Utils_folder);
 end
 
 % clear out runtime folder, yes do
-runtimefiles = sprintf('%s\\MonkeyLogic_%s\\runtime\\*.m',ML_folder,ML_ver);
+runtimefiles = sprintf('%s\\MonkeyLogic%s\\runtime\\*.m',ML_folder,ML_ver);
 delete(runtimefiles);
 
 % force monkeylogic to reset runtime, task, and home directories
@@ -48,10 +51,10 @@ if ispref('MonkeyLogic')
     p = getpref('MonkeyLogic');
     LastTaskDir =  p.Directories.ExperimentDirectory;
     rmpref('MonkeyLogic');
-    if exist(Tasks_folder,'dir') == 7
-        success = set_ml_directories(Tasks_folder);
-    else
+    if exist(LastTaskDir,'dir') == 7
         success = set_ml_directories(LastTaskDir);
+    else
+        success = set_ml_directories(Tasks_folder);
     end
     if ~success
         error('MonkeyLogic prefrences not set as supplied')

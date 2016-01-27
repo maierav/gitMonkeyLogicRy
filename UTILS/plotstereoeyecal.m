@@ -1,6 +1,6 @@
 %fname = 'C:\Users\MLab\Desktop\git_stereostimuli\rsvptask_stereo\22-Sep-2015-stereoeyecal.txt';
 %fname = 'C:\Users\user\Documents\stereostimuli\evp\07-Dec-2015-stereoeyecal.txt';
-fname = 'C:\Users\user\Documents\stereostimuli\evp\22-Dec-2015-stereoeyecal.txt';
+fname = 'C:\Users\user\Documents\stereostimuli\evp\26-Jan-2016-stereoeyecal.txt';
 
 obs = readstereoeyecal(fname);
 
