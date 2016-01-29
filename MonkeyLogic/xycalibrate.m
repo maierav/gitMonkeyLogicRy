@@ -24,7 +24,7 @@ SigTransform = [];
 
 DEBUG_ON_VIDEO = 0;     % set to 1 in order to disable video (makes debugging easier)
 DEBUG_ON_KEYBOARD = 0;  % set to 1 in order to continue using the keyboard
-DEBUG_ON_MOUSE = 0;     % set to 1 in order to continue using the mouse
+DEBUG_ON_MOUSE = 1;     % set to 1 in order to continue using the mouse
 
 if isempty(fig),
     if isempty(varargin),
@@ -489,13 +489,12 @@ elseif ismember(gcbo, get(fig, 'children')),
                     [xp yp] = tformfwd(SigTransform, xv, yv);
                     set(xy, 'xdata', xp, 'ydata', yp);
                     if (refresh_time == 200)
-                        xystr = sprintf('Current Input: X= %2.2f V   Y= %2.2f V', xp, yp);
+                        xystr = sprintf('Current Input: X= %2.2f V   Y= %2.2f V', xv, yv);
                         set(findobj(gcf, 'tag', 'xytxt_real_time'), 'string', xystr);
                         refresh_time = 0;
                     else 
                         refresh_time = refresh_time + 1;
                     end
-                    
                     drawnow;
                     
                     t2 = toc*1000;
@@ -529,47 +528,34 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 
                                 xv = data(firstsample:lastsample, xchan);
                                 yv = data(firstsample:lastsample, ychan);
-                                 
-                                
-                                max_xv = min(xv);
-                                min_xv = max(xv);
-                                max_yv = min(yv);
-                                min_yv = max(yv);
-                                median_xv = median(xv);
-                                median_yv = median(yv);
-                                mean_xv = nanmean(xv);
-                                mean_yv = nanmean(yv);
-                                
-                                
 
                                	switch calibrationPointTypeIndex,
-
                                     case 1,
-                                        [xp yp] = tformfwd(SigTransform, min_xv, min_yv);
                                         disp('<<< MonkeyLogic >>> Using minimum value')
-                                        % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
-                                        savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), min_xv, min_xv, ScreenInfo); %MAC!
+                                        xv = min(xv);
+                                        xy = min(xy);
                                     case 2,
-                                        [xp yp] = tformfwd(SigTransform, max_xv, max_yv);
                                         disp('<<< MonkeyLogic >>> Using maximum value')
-                                        % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
-                                        savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), max_xv, max_yv, ScreenInfo); %MAC!
+                                        xv = min(xv);
+                                        xy = min(xy);
                                     case 3,
-                                        [xp yp] = tformfwd(SigTransform, mean_xv, mean_yv);
                                         disp('<<< MonkeyLogic >>> Using mean value')
-                                        % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
-                                        savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), mean_xv, mean_yv, ScreenInfo); %MAC!
+                                        xv = nanmean(xv);
+                                        yv = nanmean(yv);
                                     case 4,
-                                        [xp yp] = tformfwd(SigTransform, median_xv, median_yv);
                                         disp('<<< MonkeyLogic >>> Using median value')
-                                        % ADDED BY MAIER LAB FOR CUSTOM STERO CALIBRATION CHECK
-                                        savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), median_xv, median_yv, ScreenInfo); %MAC!
-
+                                        xv = nanmedian(xv);
+                                        yv = nanmedian(yv);
                                 end
+                                
+                                % MAIER LAB CUSTOM STERO CALIBRATION CHECK
+                                savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), xv, xy, ScreenInfo); %MAC!
                      
+                                % transform
+                                [xp yp] = tformfwd(SigTransform, xv, yv);  
                                 cp(targetNum, 1:2) = [xp yp];
                                 SigTransform = updategrid(cp, targetlist);
-
+ 
                                 % update the location of the calibrated target
                                 %set(xy, 'xdata', [xp1 xp2 xp3 xp4], 'ydata', [yp1 yp2 yp3 yp4], 'markerfacecolor', [1 .3 .3]);
                                 set(xy, 'xdata', xp, 'ydata', yp, 'markerfacecolor', [1 .3 .3]);
@@ -613,35 +599,41 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 mlvideo('flip', ScreenInfo.Device);
                             end
                             
-                            dotison = 0;
+                            dotison = 0; 
                             pause(0.25);
                             set(xy, 'markerfacecolor', [0.5 0.5 0.5]);
                             set(tgt, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
                             
-                            t2 = maxduration;
-                            
                             targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
 
-                            %tries = numtargets;
+                            % MAC -- Jan 2106, commented out lines below
+                            % to stop automatic andvancement
+                            % behavior, simmilar to old monkey logic
                             
-                            % automatically step to the next stimulus
-                            % target location after user accepts a
-                            % calibration point by pressing the space bar
-                            % (continue to allow the user to press 'p' or
-                            % 'n' if they wish to cycle through the targets
-                            % manually. Does not repeat already calibrated
-                            % targets.
-                            %while (targetCalibrated(targetNum) == 1)
-                                targetNum = targetNum + 1;
-                                if targetNum > numtargets,
-                                    targetNum = 1;
-                                end
-                                %tries = tries - 1;
-                                %if (tries == 0)
-                                    % all targets have been calibrated
-                                %    break;
-                                %end
-                            %end
+%                             %tries = numtargets;
+%                             
+%                             % [THIS NOTE IS NO LONGER APPLICABLE - MAC ]
+%                             % automatically step to the next stimulus
+%                             % target location after user accepts a
+%                             % calibration point by pressing the space bar
+%                             % (continue to allow the user to press 'p' or
+%                             % 'n' if they wish to cycle through the targets
+%                             % manually. Does not repeat already calibrated
+%                             % targets.
+%                             %while (targetCalibrated(targetNum) == 1)
+%                            
+%                             targetNum = targetNum + 1; THESE ARE THE KEY LINES
+%                             if targetNum > numtargets,
+%                                 targetNum = 1;
+%                             end
+%                             t2 = maxduration;
+% 
+%                             %tries = tries - 1;
+%                             %if (tries == 0)
+%                             % all targets have been calibrated
+%                             %    break;
+%                             %end
+%                             %end
                                                         
                         elseif kb == 25, %p for previous
                             t2 = maxduration;
