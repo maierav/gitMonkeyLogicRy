@@ -1,6 +1,6 @@
-%fname = 'C:\Users\MLab\Desktop\git_stereostimuli\rsvptask_stereo\22-Sep-2015-stereoeyecal.txt';
-%fname = 'C:\Users\user\Documents\stereostimuli\evp\07-Dec-2015-stereoeyecal.txt';
-fname = 'C:\Users\user\Documents\stereostimuli\evp\26-Jan-2016-stereoeyecal.txt';
+pathhead=getenv('USERPROFILE');
+fname = [pathhead ...
+    '\Documents\stereostimuli\distimuli\28-Jan-2016-stereoeyecal.txt'];
 
 obs = readstereoeyecal(fname);
 
@@ -29,7 +29,7 @@ xlim([-5 5]); ylim([-5 5]);
 axis square;
 ylabel('Y voltage');
 xlabel('X voltage');
-set(gca,'YDir','reverse'); 
+%set(gca,'YDir','reverse'); 
 title(datestr(obs(end).timestamp));
 %legend([le re h],'Left Eye','Right Eye','(x,y) dva','Location','BestOutside')
 legend([le re],'Left Eye','Right Eye','Location','BestOutside')
