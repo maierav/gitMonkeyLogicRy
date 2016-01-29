@@ -1,4 +1,4 @@
-function startMonkeyLogic(varargin)
+function p = startMonkeyLogic(varargin)
 
 % July 2104, Updated Jan 2016 for "gitMonkeyLogicRy"
 % MAC
@@ -58,6 +58,8 @@ if ispref('MonkeyLogic')
     end
     if ~success
         error('MonkeyLogic prefrences not set as supplied')
+    else
+        p = getpref('MonkeyLogic');
     end
 end
 
