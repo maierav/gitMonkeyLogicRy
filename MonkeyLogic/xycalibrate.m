@@ -284,7 +284,7 @@ elseif ismember(gcbo, get(fig, 'children')),
             
             targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
             numtargets = size(targetlist, 1);
-            targetCalibrated = zeros(1, numtargets);
+%             targetCalibrated = zeros(1, numtargets);
             xy = findobj(gcf,'tag', 'xy');
             tgt = findobj(gcf, 'tag', 'tgt');
             tgt_all = findobj(gcf, 'tag', 'tgt_all');
@@ -533,11 +533,11 @@ elseif ismember(gcbo, get(fig, 'children')),
                                     case 1,
                                         disp('<<< MonkeyLogic >>> Using minimum value')
                                         xv = min(xv);
-                                        xy = min(xy);
+                                        yv = min(yv);
                                     case 2,
                                         disp('<<< MonkeyLogic >>> Using maximum value')
-                                        xv = min(xv);
-                                        xy = min(xy);
+                                        xv = max(xv);
+                                        yv = max(yv);
                                     case 3,
                                         disp('<<< MonkeyLogic >>> Using mean value')
                                         xv = nanmean(xv);
@@ -549,13 +549,14 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 end
                                 
                                 % MAIER LAB CUSTOM STERO CALIBRATION CHECK
-                                savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), xv, xy, ScreenInfo); %MAC!
+                                savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), xv, yv, ScreenInfo); %MAC!
                      
-                                % transform
-                                [xp yp] = tformfwd(SigTransform, xv, yv);  
-                                cp(targetNum, 1:2) = [xp yp];
+                                % transform, fixed Jan 30 2016, MAC
+                                cp(targetNum, 1:2) = [xv yv];
                                 SigTransform = updategrid(cp, targetlist);
- 
+                                [xp yp] = tformfwd(SigTransform, xv, yv);
+
+%  
                                 % update the location of the calibrated target
                                 %set(xy, 'xdata', [xp1 xp2 xp3 xp4], 'ydata', [yp1 yp2 yp3 yp4], 'markerfacecolor', [1 .3 .3]);
                                 set(xy, 'xdata', xp, 'ydata', yp, 'markerfacecolor', [1 .3 .3]);
@@ -604,7 +605,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                             set(xy, 'markerfacecolor', [0.5 0.5 0.5]);
                             set(tgt, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
                             
-                            targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
+                            % targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
 
                             % MAC -- Jan 2106, commented out lines below
                             % to stop automatic andvancement
