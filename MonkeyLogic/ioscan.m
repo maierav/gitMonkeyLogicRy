@@ -4,10 +4,14 @@ function AdaptorInfo = ioscan()
 % Modified 2/1/07 (bug in digitalio assignments fixed) --WA
 % Modified 1/4/08 (improved error handling) --WA
 
-disp('<<< MonkeyLogic >>> Gathering I/O board info (running ioscan.m)...')
+logger = log4m.getLogger('log.txt');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
+logger.info('ioscan.m', '<<< MonkeyLogic >>> Gathering I/O board info (running ioscan.m)...');
 hwinfo = daqhwinfo;
-disp(sprintf('<<< MonkeyLogic >>> DAQ Driver Version: %s %s', daq.getVendors().FullName, daq.getVendors().DriverVersion));
-disp(sprintf('<<< MonkeyLogic >>> DAQ Toolbox Version: %s %s', hwinfo.ToolboxName, hwinfo.ToolboxVersion));
+logger.info('ioscan.m', sprintf('<<< MonkeyLogic >>> DAQ Driver Version: %s %s', daq.getVendors().FullName, daq.getVendors().DriverVersion));
+logger.info('ioscan.m', sprintf('<<< MonkeyLogic >>> DAQ Toolbox Version: %s %s', hwinfo.ToolboxName, hwinfo.ToolboxVersion));
 
 %insert an additional adapter
 numFound = length(hwinfo.InstalledAdaptors);
@@ -116,9 +120,9 @@ for adaptornum = 1:length(adaptors),
     end
 end
 
-disp(sprintf('<<< MonkeyLogic >>> Found %i I/O adaptors:', length(adaptors)))
+logger.info('ioscan.m', sprintf('<<< MonkeyLogic >>> Found %i I/O adaptors:', length(adaptors)));
 for i = 1:length(adaptors),
-	disp(sprintf('... %i) %s', i, adaptors{i}))
+	logger.info('ioscan.m', sprintf('... %i) %s', i, adaptors{i}));
 end
 AdaptorInfo = AdaptorInfo(1:totalboards);
 

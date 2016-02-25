@@ -10,7 +10,7 @@
 % This task is much more efficient than the other sample. However, it can
 % not display any advanced touch location stimuli.
 %
-% February 04, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% February 12, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 %
 % This will automatically enable the cursor, replicating the same behavior
 % achieved if enabling the Mouse/System Keys option in the advanced menu
@@ -41,24 +41,40 @@ toggleobject(touchTargetRightNotFilled, 'Status', 'on');
 
 while toc(scene_timer) < 10
 
-    ontargets = eyejoytrack('touchtarget', [touchTargetLeftNotFilled touchTargetRightNotFilled],  windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
+    ontarget = eyejoytrack('touchtarget', [touchTargetLeftNotFilled touchTargetRightNotFilled], windowSize, 'acquirefix', [touchTargetLeftNotFilled touchTargetRightNotFilled], windowSize, fixDuration);
 
-    if (ontargets == 1)
+    if (ontarget(1) == 1)
         toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
         toggleobject(touchTargetLeftFilled, 'Status', 'on');
         trialerror(0);
-        disp('<<< MonkeyLogic >>> Target 1 Selected');
+        disp('<<< MonkeyLogic >>> Target 1 Selected with Controller 1');
         break;
     end
 
-    if (ontargets == 2)
+    if (ontarget(2) == 1)
+        toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
+        toggleobject(touchTargetLeftFilled, 'Status', 'on');
+        trialerror(0);
+        disp('<<< MonkeyLogic >>> Target 1 Selected with Controller 2');
+        break;
+    end
+    
+    if (ontarget(1) == 2)
         toggleobject(touchTargetRightNotFilled, 'Status', 'off');
         toggleobject(touchTargetRightFilled, 'Status', 'on');
         trialerror(1);
-        disp('<<< MonkeyLogic >>> Target 2 Selected');
+        disp('<<< MonkeyLogic >>> Target 2 Selected with Controller 1');
         break;
     end
 
+    if (ontarget(2) == 2)
+        toggleobject(touchTargetRightNotFilled, 'Status', 'off');
+        toggleobject(touchTargetRightFilled, 'Status', 'on');
+        trialerror(1);
+        disp('<<< MonkeyLogic >>> Target 2 Selected with Controller 2');
+        break;
+    end
+    
     idle(20);  % if this idle command is missing there will be a buffer overrun error when the trial completes
     
 end

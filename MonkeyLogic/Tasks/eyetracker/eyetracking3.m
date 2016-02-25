@@ -5,11 +5,11 @@
 % shaped stimuli will cause them to be selected (switch from not filled to
 % filled colors). 
 % 
-% Nov 19, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% February 01, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
-fixDuration = 2000; % duration in milliseconds to test for a fixation
-holdDuration = 500;
+fixDuration = 5000; % duration in milliseconds to test for a fixation
+holdDuration = 750;
 
 gazeTargetLeftNotFilled    = 1;
 gazeTargetLeftFilled       = 2;
@@ -20,44 +20,52 @@ ontargetLeftTarget = 0;
 ontargetRightTarget = 0;
 
 showcursor('on');
-scene_timer = tic;
-target_fixed = [0, 0];
 
 toggleobject(gazeTargetLeftNotFilled, 'Status', 'on');
 toggleobject(gazeTargetRightNotFilled, 'Status', 'on');
+toggleobject(gazeTargetLeftFilled, 'Status', 'off');
+toggleobject(gazeTargetRightFilled, 'Status', 'off');
 
 ontargets = eyejoytrack('acquirefix', [gazeTargetLeftNotFilled gazeTargetRightNotFilled],  windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
 if (ontargets == 1)
 
-	toggleobject(gazeTargetLeftNotFilled, 'Status', 'off');
-    toggleobject(gazeTargetLeftFilled, 'Status', 'on');
-    target_fixed(1) = 1;
-    disp('<<< MonkeyLogic >>> Target 1 Fixed');
+    disp('<<< eyetracking3.m >>> Object 1 acquirefix');
+
+    toggleobject(gazeTargetRightNotFilled, 'Status', 'off'); % TURN OFF THE OTHER TARGET TO INDICATE THAT YOU HAVE SELECTED THE CORRECT OBJECT
 
     ontargets = eyejoytrack('holdfix', gazeTargetLeftFilled,  windowSize, holdDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargets == 1)
+        toggleobject(gazeTargetLeftNotFilled, 'Status', 'off');
+        toggleobject(gazeTargetLeftFilled, 'Status', 'on');
     	trialerror(1);
-        disp('<<< MonkeyLogic >>> Target 1 held');
+        disp('<<< eyetracking3.m >>> Object 1 holdfix');
+    else 
+    	trialerror(3);
+        disp('<<< eyetracking3.m >>> Object 1 premature holdfix');
 	end
         
 end
 
 if (ontargets == 2)
         
-	toggleobject(gazeTargetRightNotFilled, 'Status', 'off');
-    toggleobject(gazeTargetRightFilled, 'Status', 'on');
-    target_fixed(2) = 1;
-    disp('<<< MonkeyLogic >>> Target 2 Fixed');
+    disp('<<< eyetracking3.m >>> Object 2 acquirefix');
+
+    toggleobject(gazeTargetLeftNotFilled, 'Status', 'off'); % TURN OFF THE OTHER TARGET TO INDICATE THAT YOU HAVE SELECTED THE CORRECT OBJECT
 
     ontargets = eyejoytrack('holdfix', gazeTargetRightFilled,  windowSize, holdDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
 
     if (ontargets == 1)
+        toggleobject(gazeTargetRightNotFilled, 'Status', 'off');
+        toggleobject(gazeTargetRightFilled, 'Status', 'on');
     	trialerror(2);
-        disp('<<< MonkeyLogic >>> Target 2 held');
+        disp('<<< eyetracking3.m >>> Object 2 holdfix');
+    else 
+    	trialerror(4);
+        disp('<<< eyetracking3.m >>> Object 3 premature holdfix');
 	end
         
 end
 
-set_iti(750);
+set_iti(750); % in milliseconds
