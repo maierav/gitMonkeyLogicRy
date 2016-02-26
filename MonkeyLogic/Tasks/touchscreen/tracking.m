@@ -9,7 +9,15 @@
 % shaped stimuli will cause them to be selected (switch from not filled to
 % filled colors).
 % 
-% Nov 19, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% February 10, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This code below will automatically enable the cursor, replicating the same behavior
+% achieved if enabling the Mouse/System Keys option in the advanced menu
+dirs = getpref('MonkeyLogic', 'Directories');
+message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
+system(message);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 scene_timer = tic;
 windowSize = 1.5; % in degrees of visual angle (DVA)
@@ -53,7 +61,9 @@ while toc(scene_timer) < 10
     if (ontargetLeftTarget)
        toggleobject(touchTargetLeftNotFilled, 'Status', 'off');
        toggleobject(touchTargetLeftFilled, 'Status', 'on');
-       trialerror(0);
+        trialerror(0);
+        disp('<<< MonkeyLogic >>> Target 1 Selected');
+        break;
     else 
        toggleobject(touchTargetLeftNotFilled, 'Status', 'on');
        toggleobject(touchTargetLeftFilled, 'Status', 'off');
@@ -62,7 +72,9 @@ while toc(scene_timer) < 10
     if (ontargetRightTarget)
        toggleobject(touchTargetRightNotFilled, 'Status', 'off');
        toggleobject(touchTargetRightFilled, 'Status', 'on');
-       trialerror(0);
+        trialerror(1);
+        disp('<<< MonkeyLogic >>> Target 2 Selected');
+        break;
     else 
        toggleobject(touchTargetRightNotFilled, 'Status', 'on');
        toggleobject(touchTargetRightFilled, 'Status', 'off');
@@ -76,4 +88,4 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 1);
 end
 
-set_iti(3000);
+set_iti(750);
