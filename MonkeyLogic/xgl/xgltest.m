@@ -19,7 +19,7 @@ test_getmode
 test_getcurrentmode
 test_hwconversion
 
-d=input('Enter the device number (1-indexed): ');
+d=input('Enter the device number: ');
 
 xglinit
 if d>xgldevices | d<1

@@ -62,8 +62,8 @@ enum PixelFormat
 
 struct DisplayMode
 {
-    int width;
-    int height;
+    unsigned width;
+    unsigned height;
     unsigned freq;
     PixelFormat pf;
 };
@@ -144,7 +144,7 @@ class Session
     void Release ();
     unsigned TotalDevices ();
     std::string GetDeviceInfo (unsigned device);
-    void GetScreenRect (unsigned device, int *x, int *y, int *w, int *h);
+    void GetScreenRect (unsigned device, unsigned *x, unsigned *y, unsigned *w, unsigned *h);
     unsigned TotalModes (unsigned device, PixelFormat pf);
     void GetMode (unsigned device, PixelFormat pf, unsigned m, DisplayMode *dm);
     void GetCurrentMode (unsigned device, DisplayMode *dm);
@@ -366,7 +366,7 @@ class Session
     void Release ();
     unsigned TotalDevices ();
     std::string GetDeviceInfo (unsigned device);
-    void GetScreenRect (unsigned device, int *x, int *y, int *w, int *h);
+    void GetScreenRect (unsigned device, unsigned *x, unsigned *y, unsigned *w, unsigned *h);
     unsigned TotalModes (unsigned device, PixelFormat pf);
     void GetMode (unsigned device, PixelFormat pf, unsigned m, DisplayMode *dm);
     void GetCurrentMode (unsigned device, DisplayMode *dm);

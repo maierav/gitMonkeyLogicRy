@@ -1308,15 +1308,6 @@ void xgltext_mexgen (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // Check output types
 }
 
-void xglgetcursor_buttonstate (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]);
-
-void xglgetcursor_buttonstate_mexgen (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
-    xglgetcursor_buttonstate (nlhs, plhs, nrhs, prhs);
-
-	// Check output types
-}
-
 typedef void (*MEXFUNCTION) (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]);
 
 MEXFUNCTION functions[] =
@@ -1366,7 +1357,6 @@ MEXFUNCTION functions[] =
     xgltextwidth_mexgen,
     xgltextheight_mexgen,
     xgltext_mexgen,
-	xglgetcursor_buttonstate_mexgen,
 };
 
 static const int MAX_FUNCTIONS = sizeof (functions) / sizeof (void (*) ());
