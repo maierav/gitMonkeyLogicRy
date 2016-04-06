@@ -1,7 +1,26 @@
 function savestereoeyecal(xdva, ydva, xV, yV, ScreenInfo)
-%fprintf('\n%e,%e,%e,%e,\n',xdva,ydva,xV,yV)
 
-sereozero = (ScreenInfo.Xsize/ScreenInfo.PixelsPerDegree)/4; 
+global STEREOSHIFT
+
+% check STEREOSHIFT
+if  isempty(STEREOSHIFT)
+    setStereoShift;
+end
+
+% undo "findScreenPos" to get cord relative to each eye's view
+if xdva > 0 
+    % RIGHT side of screen
+    newcenter  = 0  + (ScreenInfo.Xsize/ScreenInfo.PixelsPerDegree)/4;
+    ssX        = STEREOSHIFT.rightX;
+    ssY        = STEREOSHIFT.rightY;
+else
+    % LEFT side of screen
+    newcenter  = 0 - (ScreenInfo.Xsize/ScreenInfo.PixelsPerDegree)/4;
+    ssX        = STEREOSHIFT.leftX;
+    ssY        = STEREOSHIFT.leftY;
+end
+xeye = newcenter + -1*(xdva - ssX);
+yeye =  ydva - ssY;
 
 p = getpref('MonkeyLogic');
 fpath = p.Directories.ExperimentDirectory;
@@ -29,8 +48,8 @@ formatSpec =  '%f\t%f\t%f\t%f\t%f\t%f\t%f\r\n';
 fprintf(fid,formatSpec,...
     xdva,...
     ydva,...
-    (abs(xdva) - sereozero) * sign(xdva),...
-    ydva,...
+    xeye,...
+    yeye,...
     xV,...
     yV,...
     now);

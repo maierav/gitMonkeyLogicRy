@@ -1,41 +1,42 @@
-% get xy points (deg) on screen for eye calibration for dichoptic
-% paradigms
-clear all; 
-xconstant = 0; 
+% get xy points (deg) on screen for eye calibration for dichoptic paradigms
 
-% extract screen info from TrialRecord
+% Fall 2015, KD
+% April 2016, MAC 
+
+% setup array of x and y cordinates
+clear x y tl int
+int = 5;
+y = [5:-int:-5];
+x = y;
+tl = combvec(x,y); 
+tl = horzcat([0;0], tl);
+
+% extract ScreenInfo from Calibration Window BasicData
+clear fig ScreenInfo BasicData
 fig = findobj('tag', 'xycalibrate');
 BasicData = get(fig, 'userdata');
+ScreenInfo   = BasicData.ScreenInfo;
 
-ScreenInfo = BasicData.ScreenInfo;
-pixperdeg   = ScreenInfo.PixelsPerDegree;
+% findScreenPos
+clear rightlist leftlist 
+for TOcount = 1:2
+    % 1 = LE, 2 = RE
+    clear X Y 
+    [X,Y] = findScreenPos(TOcount,ScreenInfo,tl(1,:),tl(2,:),'cart');
+    
+    if TOcount == 1
+        leftlist = [X;Y];
+    elseif TOcount == 2
+        rightlist = [X;Y];
+    end
+    
+end
 
-bg_color    = [0.5 0.5 0.5]; %ScreenInfo.BackgroundColor; 
-cr_color    = [0 0 0]; 
-
-xpix  = ScreenInfo.Xsize; 
-ypix  = ScreenInfo.Ysize; 
-
-xdegs = xpix/pixperdeg; 
-ydegs = ypix/pixperdeg; 
-
-% find center points on each half of screen 
-xRC = xdegs/4; 
-yRC = 0; 
-
-int = 5; 
-y = [5:-int:-5];
-x = y + xRC;
-x = x (x>0);
-x = [x (x.*-1)]; 
-tl = combvec(x,y); 
-c = [xRC -xRC; 0 0]; 
-new_targetlist = [c tl]; 
- 
-% only right eye 
-rightlist = new_targetlist(:,find(new_targetlist(1,:)>0)); 
-
-% only left eye
-leftlist  = new_targetlist(:,find(new_targetlist(1,:)<0)); 
-
+clear new_targetlist
+new_targetlist(:,1) = leftlist(:,1);
+new_targetlist(:,2) = rightlist(:,1);
+for idx = 2:length(y):length(leftlist)
+    new_targetlist = [new_targetlist leftlist(:,idx:idx+length(y)-1)  rightlist(:,idx:idx+length(y)-1)];
+end
+    
 clearvars -except rightlist leftlist new_targetlist
