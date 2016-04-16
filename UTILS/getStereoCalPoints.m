@@ -16,6 +16,8 @@ clear fig ScreenInfo BasicData
 fig = findobj('tag', 'xycalibrate');
 BasicData = get(fig, 'userdata');
 ScreenInfo   = BasicData.ScreenInfo;
+fprintf('\n<<<  Maier Lab  >>> PixelsPerDegree = %0.2f\n',ScreenInfo.PixelsPerDegree);
+
 
 % findScreenPos
 clear rightlist leftlist 
