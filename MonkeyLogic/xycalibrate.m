@@ -142,7 +142,7 @@ if isempty(fig),
     uicontrol('style', 'text', 'position', [30 ys-420 120 18], 'string', 'Space: Process Target', 'backgroundcolor', bg,'horizontalalignment', 'left');
     uicontrol('style', 'text', 'position', [160 ys-420 60 18], 'string', 'Q: Quit', 'backgroundcolor', bg, 'horizontalalignment', 'left');
 
-    uicontrol('style', 'popupmenu', 'position', [60 ys-450 125 20], 'string', {'Min', 'Max', 'Mean', 'Median'}', 'tag', 'calibrationpointtype', 'backgroundcolor', [1 1 1], 'value', 3);
+    uicontrol('style', 'popupmenu', 'position', [60 ys-450 125 20], 'string', {'Min', 'Max', 'Mean', 'Median'}', 'tag', 'calibrationpointtype', 'backgroundcolor', [1 1 1], 'value', 4);
 
     rx = cpsize/xs;
     rxy = (xs+cpsize)/ys;

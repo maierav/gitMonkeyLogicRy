@@ -1465,7 +1465,7 @@ if gen                          % what to do in case the movie to be buffered is
     [~, xis, yis, xisbuf, yisbuf] = pad_image(name(:,:,:,1), ScreenInfo.ModVal, ScreenInfo.BackgroundColor);
     numframes = size(name, 4);
     M = uint32(zeros([xisbuf*yisbuf numframes]));
-
+    
     firstbuffer = vbufnum + 1;
     for framenumber = 1:numframes,
         [imdata, xis, yis, xisbuf, yisbuf] = pad_image(name(:,:,:,framenumber), ScreenInfo.ModVal, ScreenInfo.BackgroundColor);   %#ok<NASGU,NASGU>
@@ -1473,6 +1473,14 @@ if gen                          % what to do in case the movie to be buffered is
         if ~any(imdata(:) > 1),
             imdata = ceil(255*imdata);
         end
+        % Gamma Correction WILL NOT BE APPLIED in ML VIDEO for gen function making movies.
+        % APPLY HERE:
+        monitor = '022MIT';
+        Rimdata = gammaCorrect(imdata(:,:,1),monitor,1);
+        Gimdata = gammaCorrect(imdata(:,:,2),monitor,2);
+        Bimdata = gammaCorrect(imdata(:,:,3),monitor,3);
+        clear imdata;
+        imdata = cat(3,Rimdata,Gimdata,Bimdata);
         imdata = uint32(xglrgb8(imdata(:, :, 1)', imdata(:, :, 2)', imdata(:, :, 3)'));
         vbuf = mlvideo('createbuffer', ScreenInfo.Device, xisbuf, yisbuf, ScreenInfo.BytesPerPixel);
         mlvideo('copybuffer', ScreenInfo.Device, vbuf, imdata, ScreenInfo.BackgroundColor);
@@ -1485,7 +1493,7 @@ if gen                          % what to do in case the movie to be buffered is
     yoffset = round(yis/2);
     xscreenpos = ScreenInfo.Half_xs + round(ScreenInfo.PixelsPerDegree * xpos) - xoffset;
     yscreenpos = ScreenInfo.Half_ys - round(ScreenInfo.PixelsPerDegree * ypos) - yoffset; %invert so that positive y is above the horizone
-
+    
     if xscreenpos + xis > ScreenInfo.Xsize || yscreenpos + yis > ScreenInfo.Ysize || xscreenpos < 0 || yscreenpos < 0,
         error('*** MonkeyLogic Error: Movie "%s" is placed outside of screen pixel boundaries', name);
     end

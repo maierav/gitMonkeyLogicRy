@@ -4266,7 +4266,7 @@ try
         setpref('MonkeyLogic', 'LastUpdateCheck', todaynum);
     end
 catch ME %likely no network...
-    logger.info('mlmenu.m', sprintf('>>> Unable to check for MonkeyLogic updates (%s) <<<', ME.identifier))
+    %logger.info('mlmenu.m', sprintf('>>> Unable to check for MonkeyLogic updates (%s) <<<', ME.identifier))
 end
 
 
