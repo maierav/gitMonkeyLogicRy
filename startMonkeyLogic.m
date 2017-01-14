@@ -31,6 +31,8 @@ end
 ML_folder = pwd;
 Tasks_folder = [ML_folder, filesep, 'MonkeyLogic', ML_ver, filesep 'Tasks', filesep];
 Utils_folder = [ML_folder, filesep, 'UTILS', filesep];
+DAQ_folder   = [ML_folder, filesep, 'MonkeyLogic', ML_ver, filesep, 'daqtoolbox', filesep];
+
 
 % put monkeylogic on path
 addpath(genpath(sprintf('%s\\MonkeyLogic%s',ML_folder,ML_ver)));
@@ -40,6 +42,9 @@ rmpath(genpath([ML_folder, filesep, 'MonkeyLogic', ML_ver, filesep 'Docs', files
 % add UTILS folder to path if it exists
 if exist(Utils_folder,'dir') == 7
     addpath(Utils_folder);
+end
+if exist(DAQ_folder,'dir') == 7
+    addpath(DAQ_folder);
 end
 
 % clear out runtime folder, yes do
