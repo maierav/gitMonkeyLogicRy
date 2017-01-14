@@ -5,18 +5,10 @@
 % shaped stimuli, then clicking and releasing,
 % will cause that stimuli to be selected (switch from not filled to
 % filled colors). 
-% 
-% The position of the cursor is displayed using showcursor('on'). 
 %
-% February 04, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 14, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
 %
-% This will automatically enable the cursor, replicating the same behavior
-% achieved if enabling the Mouse/System Keys option in the advanced menu
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-dirs = getpref('MonkeyLogic', 'Directories');
-message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
-system(message);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a fixation
@@ -34,8 +26,7 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 0);
 end
 
-showcursor('on');
-scene_timer = tic;
+%showcursor('on'); % warning: displaying the cursor on the stimulus display will increase the max latency.
 
 toggleobject(touchTargetLeftNotFilled, 'Status', 'on');
 toggleobject(touchTargetRightNotFilled, 'Status', 'on');

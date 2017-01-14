@@ -8,7 +8,7 @@ function [DAQ, DaqError] = initio(IO)
 % Last modified 8/11/08 -WA (to make certain analog-input objects use DMA)
 % Last modified 11/17/15 -ER (Added DigitalInputStream for touchscreens and other future devices)
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -135,7 +135,7 @@ end
 if EyeXpresent || EyeYpresent,
     if numfieldsEyeX ~= numfieldsEyeY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 eye signal inputs';
-        logger.info('initio.m', 'I/O Error: Must define 0 or 2 eye signal inputs');
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 eye signal inputs');
         return 
     end
 end
@@ -149,7 +149,7 @@ end
 if JoyXpresent || JoyYpresent,
     if numfieldsJoyX ~= numfieldsJoyY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 joystick inputs';
-        logger.info('initio.m', 'I/O Error: Must define 0 or 2 joystick inputs');
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 joystick inputs');
         return
     end
 end
@@ -163,7 +163,7 @@ end
 if TouchXpresent || TouchYpresent,
     if numfieldsTouchX ~= numfieldsTouchY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 touchscreen inputs';
-        logger.info('initio.m', 'I/O Error: Must define 0 or 2 touchscreen inputs');
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 touchscreen inputs');
         return
     end
 end
@@ -177,7 +177,7 @@ end
 if MouseXpresent || MouseYpresent,
     if numfieldsMouseX ~= numfieldsMouseY,
         DaqError{1} = 'I/O Error: Must define 0 or 2 mouse inputs';
-        logger.info('initio.m', 'I/O Error: Must define 0 or 2 mouse inputs');
+        logger.info('initio.m', '<<< MonkeyLogic >>> I/O Error: Must define 0 or 2 mouse inputs');
         return
     end
 end
@@ -351,17 +351,17 @@ for i = 1:length(fnames),
             end
             
             DAQ.BehavioralCodes.DIO = eval(IO.CodesDigOut.Constructor);
-            portnumber = IO.CodesDigOut.Channel;
-            if ~isfield(IO.CodesDigOut, 'Line'),
-                lineabsenterror;
-            end
-            hwlines = IO.CodesDigOut.Line;
-            try
-                % no need to specify the port number. Lines are coded in
-                % the following manner:
-                % e.g. for 3 ports with 8 lines in each port:
-                % Port0->Lines 0-7, Port1->Lines 8-15, Port2->Lines 16-23
-                DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, hwlines, 'out', 'BehaviorCodes');
+            if ~isfield(IO.CodesDigOut, 'Line'), lineabsenterror; end
+                try
+                if ~iscell(IO.CodesDigOut.Line)
+                    DAQ.BehavioralCodes.DataBits = addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line, IO.CodesDigOut.Channel(1), 'out', 'BehaviorCodes');
+                    else
+                    for m=1:length(IO.CodesDigOut.Channel)
+                        if isempty(IO.CodesDigOut.Line{m}), continue; end
+                        addline(DAQ.BehavioralCodes.DIO, IO.CodesDigOut.Line{m}, IO.CodesDigOut.Channel(m), 'out', 'BehaviorCodes');
+                        end
+                        DAQ.BehavioralCodes.DataBits = DAQ.BehavioralCodes.DIO.Line;
+                    end
             catch
                 DaqError{1} = '*** Unable to assign output digital lines for Behavioral Codes ***';
                 logger.info('initio.m', DaqError{1});

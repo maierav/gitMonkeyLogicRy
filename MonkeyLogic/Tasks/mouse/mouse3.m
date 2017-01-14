@@ -9,7 +9,8 @@
 % 
 % The position of the cursor is displayed using showcursor('on')
 %
-% Dec 24, 2015   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+% April 14, 2016   Last Modified by Edward Ryklin(edward@ryklinsoftware.com)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 windowSize = 1.5;   % in degrees of visual angle (DVA) I believe this is the diameter (not radius)
 fixDuration = 5000; % duration in milliseconds to test for a touch/fixation
@@ -27,7 +28,8 @@ for devicenum = 1:numdev,
 	xglshowcursor(devicenum, 0);
 end
 
-showcursor('on');
+%showcursor('on'); % warning: displaying the cursor on the stimulus display will increase the max latency.
+
 scene_timer = tic;
 target_selected = [0, 0];
 
@@ -37,11 +39,10 @@ toggleobject(mouseTargetRightNotFilled, 'Status', 'on');
 while toc(scene_timer) < 10
 
     ontargets = eyejoytrack('acquiremouse', [mouseTargetLeftNotFilled mouseTargetRightNotFilled],  windowSize, fixDuration);     % it does not matter if you track the filled or not filled target since they overlap eachother in space
-    mouse_state = mlvideo('getmousebuttons');   % get Button State
+    mouse_state = mlmouse('getmousebuttons');   % get Button State
    	left_button = mouse_state(1);               % get Button State Left
     right_button = mouse_state(2);              % get Button State Right
 
-        
     if (ontargets == 1) && (left_button == 1)
         toggleobject(mouseTargetLeftNotFilled, 'Status', 'off');
         toggleobject(mouseTargetLeftFilled, 'Status', 'on');

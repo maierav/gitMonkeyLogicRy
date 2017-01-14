@@ -496,7 +496,7 @@ end
 
 %Subject's Controller Cursor (Eyetracker, joystick, touchscreen, mouse, etc.)
 if update_cursor,
-    if ( (cursorpos(1) >= 0) && (cursorpos(2) >= 0) )
+    if ( (cursorpos(1) >= 0) && (cursorpos(2) >= 0) && (cursorpos(1) < ScreenData.Xsize) && (cursorpos(2) < ScreenData.Ysize))
         mlvideo('blit', ScreenData.Device, ScreenData.CursorBuffer, cursorpos(1), cursorpos(2), ScreenData.CursorXsize, ScreenData.CursorYsize);
     end
     if ScreenData.PhotoDiode > 1, %keep current photodiode trigger on-screen (so doesn't flash with cursor)
@@ -671,9 +671,11 @@ persistent TrialObject DAQ AI ScreenData eTform jTform ControlObject totalsample
     joyx joyy eyex eyey touchx touchy mousex mousey joypresent eyepresent touchpresent mousepresent eyetarget_index eyetarget_record ...
     buttonspresent analogbuttons buttonnumber buttonx buttonsdio ...
     lastframe benchmark benchdata benchcount benchdata2 benchcount2 benchmax ...
-	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys touchdata_x touchdata_y mousedata_x mousedata_y
+	rfmkeyflag rfmobpos rfmmov numframespermov rfmkeys 
+
 % Define static variables for collecting history of samples of AI.
 persistent history_AI_data history_AI_index history_AI_n;
+
 persistent fastdraw;
 if verLessThan('matlab', '8.4.0')
 	fastdraw = 0;
@@ -703,10 +705,7 @@ if fxn1 == -1,                      %initialize
     AI = [];
     TrialRecord = varargin{6};
     disp(sprintf('<<< MonkeyLogic >>> Trial #%i Initializing', TrialRecord.CurrentTrialNumber));
-    touchdata_x = [];
-    touchdata_y = [];
-    mousedata_x = [];
-    mousedata_y = [];
+
     if isempty(DAQ.AnalogInput2),
         if ~isempty(DAQ.AnalogInput),
             AI = DAQ.AnalogInput;
@@ -788,6 +787,13 @@ if fxn1 == -1,                      %initialize
             end
         end
     end
+    
+    if touchpresent || mousepresent
+        dirs = getpref('MonkeyLogic', 'Directories');
+        message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
+        system(message);
+    end
+    
     data = [];
     count = 0;
     if joypresent || eyepresent,
@@ -800,8 +806,9 @@ if fxn1 == -1,                      %initialize
         end
 
     elseif touchpresent
+        mlmouse('start');
         while isempty(data) && count < 1000,
-            data = mlvideo('gettouch');
+            data = mlmouse('gettouch_degrees');
             count = count + 1;
         end
         if isempty(data),
@@ -809,8 +816,9 @@ if fxn1 == -1,                      %initialize
         end
  
     elseif mousepresent
+        mlmouse('start');
         while isempty(data) && count < 1000,
-            data = mlvideo('getmouse');
+            data = mlmouse('getmouse_degrees');
             count = count + 1;
         end
         if isempty(data),
@@ -907,14 +915,6 @@ elseif fxn1 == -7, %RFM
     % required for check_keyboard
     RFM_TASK = 1;
 	FIRST_FRAME = 1;
-elseif fxn1 == -8,
-    ontarget    = touchdata_x;
-    rt          = touchdata_y;
-    return;
-elseif fxn1 == -9,
-    ontarget    = mousedata_x;
-    rt          = mousedata_y;
-    return;
 end
 
 % user facing functions start here 
@@ -1378,15 +1378,9 @@ while t2 < maxtime,
             yp_touch = sim_vals(2);
         else
 
-            touch_data = mlvideo('gettouch');
+            touch_data = mlmouse('gettouch_degrees');
             xp_touch = touch_data(touchx);
             yp_touch = touch_data(touchy);
-            % create a memory buffer of touch data (this is not necessary
-            % for all other forms of analoginput because they use the NIDAQ
-            % buffer).
-            touchdata_x = [touchdata_x, xp_touch];
-            touchdata_y = [touchdata_y, yp_touch];
-            
         end
 
         if ~idle && touchtrack,
@@ -1406,15 +1400,9 @@ while t2 < maxtime,
             yp_mouse = sim_vals(4);
         else
 
-            mouse_data = mlvideo('getmouse');
+            mouse_data = mlmouse('getmouse_degrees');
             xp_mouse = mouse_data(mousex);
             yp_mouse = mouse_data(mousey);
-            % create a memory buffer of touch data (this is not necessary
-            % for all other forms of analoginput because they use the NIDAQ
-            % buffer).
-            mousedata_x = [mousedata_x, xp_mouse];
-            mousedata_y = [mousedata_y, yp_mouse];
-            
         end
 
         if ~idle && mousetrack,
@@ -1453,7 +1441,7 @@ while t2 < maxtime,
 	end
 	
 	if exist('Xnew', 'var')
-        rfmtarget = mlvideo('getmouse');
+        rfmtarget = mlmouse('getmouse_degrees');
 		Xold = Xnew;
 		Yold = Ynew;
         Xnew = (rfmtarget(1) - xoffset - ScreenData.Half_xs)/ScreenData.PixelsPerDegree;
@@ -1991,9 +1979,18 @@ if ~isempty(varargin),
     end
 end
 
-data = mlvideo('gettouch');
+data = mlmouse('gettouch_degrees');
 tx = data(1);
 ty = data(2);
+
+% if the user has not made contact with the screen (left button down), then
+% replace the value of NaN with -181 so that it neither crashes ML nor
+% displays the touch location anywhere in the visual range.
+if isnan(tx) || isnan(ty),
+    tx = -181;
+    ty = -181;
+    return
+end
 
 if isfield(ScreenData, 'UpdateInterval'),
     if (t1 - last_etrace_update) > ScreenData.UpdateInterval,
@@ -2064,7 +2061,7 @@ if ~isempty(varargin),
     end
 end
 
-data = mlvideo('getmouse');
+data = mlmouse('getmouse_degrees');
 mx = data(1);
 my = data(2);
 
@@ -2137,12 +2134,12 @@ elseif strcmpi(sig(1:3), 'joy'),
     [x y] = tformfwd(jTform, x, y);
     adata = [x y];
 elseif strcmpi(sig(1:3), 'tou'),
-    tmp = mlvideo('gettouch');
+    tmp = mlmouse('gettouch_degrees');
     x = tmp(1);
     y = tmp(2);
     adata = [x y];
 elseif strcmpi(sig(1:3), 'mou'),
-    tmp = mlvideo('getmouse');
+    tmp = mlmouse('getmouse_degrees');
     x = tmp(1);
     y = tmp(2);
     adata = [x y];
@@ -2929,28 +2926,32 @@ end
 
 if ~isempty(DAQ.TouchSignal) && ~SIMULATION_MODE,
 
-    [ex, ey] = eyejoytrack(-8);  % get all touchscreen data
-    ex = touchscreen_dataclean(ex);
-    ey = touchscreen_dataclean(ey);
+    mlmouse('stop');
+	data = mlmouse('getalltouchdata_degrees');
+
+    ex = data(:,1); % x vector
+    ey = data(:,2); % y vector
     
    	%h1 = plot(ex, ey);
     %set(h1, 'color', ScreenData.TouchTraceColor/2);
     h2 = plot(ex, ey, '.');
     set(h2, 'markeredgecolor', ScreenData.TouchTraceColor, 'markersize', 20);
-    AIdata.TouchSignal = [ex' ey'];
+    AIdata.TouchSignal = [ex ey];
 end
     
 if ~isempty(DAQ.MouseSignal) && ~SIMULATION_MODE,
 
-    [ex, ey] = eyejoytrack(-9);  % get all mouse data
-    %ex = touchscreen_dataclean(ex);  %not necessary to clean mouse data
-    %ey = touchscreen_dataclean(ey);  %not necessary to clean mouse data
+    mlmouse('stop');
+	data = mlmouse('getallmousedata_degrees');
+
+    ex = data(:,1); % x vector
+    ey = data(:,2); % y vector
     
    	h1 = plot(ex, ey);
     set(h1, 'color', ScreenData.MouseTraceColor/2);
     h2 = plot(ex, ey, '.');
     set(h2, 'markeredgecolor', ScreenData.MouseTraceColor, 'markersize', 10);
-    AIdata.MouseSignal = [ex' ey'];
+    AIdata.MouseSignal = [ex ey];
 end
 
 newtform = [];

@@ -35,7 +35,7 @@ classdef log4m < handle
     end
     
     methods (Static)
-        function obj = getLogger( logPath )
+        function obj = getLogger( fileName )
             %GETLOGGER Returns instance unique logger object.
             %   PARAMS:
             %       logPath - Relative or absolute path to desired logfile.
@@ -51,6 +51,19 @@ classdef log4m < handle
             
             persistent localObj;
             if isempty(localObj) || ~isvalid(localObj)
+
+                
+				% This is so that the log file is saved in the MonkeyLogic runtime directory
+                try 
+                    dirs = getpref('MonkeyLogic', 'Directories');
+                catch 
+                    if (set_ml_directories == 1)
+                        dirs = getpref('MonkeyLogic', 'Directories');
+                    else
+                        self.logLevel = 0;
+                    end
+                end
+                logPath = strcat('C:\\', fileName);
                 localObj = log4m(logPath);
             end
             obj = localObj;
@@ -114,14 +127,18 @@ classdef log4m < handle
             %       logPath - Name or full path of desired logfile
             %
             
-            [fid,message] = fopen(logPath, 'a');
+            [fid,message] = fopen(logPath, 'w');
             
             if(fid < 0)
-                error(['Problem with supplied logfile path: ' message]);
+                disp(['Problem with supplied logfile path: ' message]);
+                return;
             end
-            fclose(fid);
             
+            fclose(fid);
+
             self.fullpath = logPath;
+
+            self.writeLog(self.INFO, sprintf('%s.m', class(self)), '<<< MonkeyLogic >>> Created a new log file');
         end
           
      
@@ -225,7 +242,8 @@ classdef log4m < handle
             
             % If necessary write to command window
             if( self.commandWindowLevel <= level )
-                fprintf('%s:%s\n', scriptName, message);
+                %fprintf('%s:%s\n', scriptName, message);  % do not want to display the script name in the output window, just the file.
+                fprintf('%s\n', message);
             end
             
             %If currently set log level is too high, just skip this log

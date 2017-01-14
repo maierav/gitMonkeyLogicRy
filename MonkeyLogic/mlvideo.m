@@ -46,11 +46,14 @@ labmonitor = '022MIT'; %'022NEC';
 result = [];
 fxn = lower(fxn);
 
-global x_touch;
-global y_touch;
-global screen_ppd;
+persistent x_touch;
+persistent y_touch;
+persistent screen_ppd;
+persistent devicenumTouch;
+persistent monitor_positions;
+persistent logger;
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -109,11 +112,13 @@ switch fxn
         xglrelease;
         xglinit;
         
-        x_touch = -180;
-        y_touch = -180;
+        x_touch = nan;
+        y_touch = nan;
         if (~isempty(varargin))
             screen_ppd = varargin{1};
         end
+        
+        mlmouse(fxn, screen_ppd);  % send the screen_ppd to mlmouse which it will use for scaling data later
         
     case 'devices',
         
@@ -125,24 +130,37 @@ switch fxn
         
     case 'setmode',
         
-        devicenum = varargin{1};
-        screen_x_size = varargin{2};
-        screen_y_size = varargin{3};
-        bytesperpixel = varargin{4};
-        refreshrate = varargin{5};
-        bufferpages = varargin{6};
-                
-        if bytesperpixel == 3 || bytesperpixel == 4,
-        	pf = xglpfrgb8;
-        elseif bytesperpixel == 1,
-            pf = xglpfgs;
-        else
-            error('Unsupported value for bytes per pixel');
-        end
+        if (~isempty(varargin))
+            devicenum = varargin{1};
+            devicenumTouch = devicenum;
+            screen_x_size = varargin{2};
+            screen_y_size = varargin{3};
+            bytesperpixel = varargin{4};
+            refreshrate = varargin{5};
+            bufferpages = varargin{6};
 
-        xglinitdevice(devicenum, [screen_x_size screen_y_size pf refreshrate], bufferpages);
-        xglflip(devicenum);
-        xglflip(devicenum);
+            monitor_positions = [xglrect(1); xglrect(2)]; % monitor positions by XGL
+
+			% determine the appropriate offsets based on the user specified display number and then send them off to the touchscreen for scaling later
+	      	obj.sub_offset_x = monitor_positions(devicenum,1) + monitor_positions(devicenum,3)/2;
+            obj.sub_offset_y = monitor_positions(devicenum,2) + monitor_positions(devicenum,4)/2;
+        
+            mlmouse(fxn, obj.sub_offset_x, obj.sub_offset_y);
+
+            if bytesperpixel == 3 || bytesperpixel == 4,
+                pf = xglpfrgb8;
+            elseif bytesperpixel == 1,
+                pf = xglpfgs;
+            else
+                error('Unsupported value for bytes per pixel');
+            end
+
+            xglinitdevice(devicenum, [screen_x_size screen_y_size pf refreshrate], bufferpages);
+            xglflip(devicenum);
+            xglflip(devicenum);
+        else 
+            result = 0;
+        end
         
     case 'restoremode',
         
@@ -157,8 +175,8 @@ switch fxn
     case 'release',
         
         xglrelease;
-        x_touch = -180;
-        y_touch = -180;
+        x_touch = nan;
+        y_touch = nan;
         
     case 'createbuffer',
         
@@ -259,7 +277,7 @@ switch fxn
             xglreleasedevice(devicenum);
         end
         xglrelease;
-		
+	
     case 'getmousebuttons'
 		result = xglgetcursor_buttonstate;		
     
@@ -271,8 +289,8 @@ switch fxn
 
         xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
 
-        obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2;
-        obj.sub_offset_y = xgl_pos(2,2) + xgl_pos(2,4)/2;
+        obj.sub_offset_x = xgl_pos(devicenumTouch,1) + xgl_pos(devicenumTouch,3)/2;
+        obj.sub_offset_y = xgl_pos(devicenumTouch,2) + xgl_pos(devicenumTouch,4)/2;
         obj.sub_ppd_x = screen_ppd;
         obj.sub_ppd_y = screen_ppd;
         
@@ -280,27 +298,30 @@ switch fxn
         result(2) = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
         
     case 'gettouch'
-		pos = xglgetcursor;
-        
-        xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
 
-        obj.sub_offset_x = xgl_pos(2,1) + xgl_pos(2,3)/2;
-        obj.sub_offset_y = xgl_pos(2,2) + xgl_pos(2,4)/2;
-        obj.sub_ppd_x = screen_ppd;
-        obj.sub_ppd_y = screen_ppd;
+        mouse_state = xglgetcursor_buttonstate; %lets call xgl directly to get mouse button status
 
-        mouse_state = mlvideo('getmousebuttons');   % get Button State
-        left_button = mouse_state(1);               % get Button State Left
-        right_button = mouse_state(2);              % get Button State Right
+        left_button = mouse_state(1); % get Button State Left
+        right_button = mouse_state(2); % get Button State Right
 
-        if ( (left_button == 1) || (right_button == 1) ) % update touch location if left mouse button is down
-            x_touch =  (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
+        if ( (left_button == 1) || (right_button == 1) ) % update touch location only if left or right mouse button is down
+
+            pos = xglgetcursor; %get coordinates of touch
+
+            xgl_pos = [xglrect(1); xglrect(2)]; % monitor positions by XGL
+
+            obj.sub_offset_x = xgl_pos(devicenumTouch,1) + xgl_pos(devicenumTouch,3)/2; % finds the center pixels of the subject screen
+            obj.sub_offset_y = xgl_pos(devicenumTouch,2) + xgl_pos(devicenumTouch,4)/2;
+            obj.sub_ppd_x = screen_ppd;
+            obj.sub_ppd_y = screen_ppd;
+
+            x_touch = (pos(1) - obj.sub_offset_x)/obj.sub_ppd_x;
             y_touch = -(pos(2) - obj.sub_offset_y)/obj.sub_ppd_y;
-        else 
-            x_touch = -180; %out of bounds
-            y_touch = -180; %out of bounds
+        else
+            x_touch = nan; %out of bounds
+            y_touch = nan; %out of bounds
         end
-        
+
         result(1) = x_touch;
         result(2) = y_touch;
         

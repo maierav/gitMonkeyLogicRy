@@ -24,7 +24,7 @@ SigTransform = [];
 
 DEBUG_ON_VIDEO = 0;     % set to 1 in order to disable video (makes debugging easier)
 DEBUG_ON_KEYBOARD = 0;  % set to 1 in order to continue using the keyboard
-DEBUG_ON_MOUSE = 1;     % set to 1 in order to continue using the mouse
+DEBUG_ON_MOUSE = 0;     % set to 1 in order to continue using the mouse
 
 if isempty(fig),
     if isempty(varargin),
@@ -101,10 +101,13 @@ if isempty(fig),
     xy = plot(0,0, 'o');
     tgt = plot(0,0, 'o');
     tgt_all = plot(0,0, 'o');
-    set(xy, 'markerfacecolor', [0.5 0.5 0.5], 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 7, 'erasemode', 'xor', 'tag', 'xy');
-    set(tgt, 'markerfacecolor', 'none', 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 30, 'erasemode', 'xor', 'tag', 'tgt');
-    set(tgt_all, 'markerfacecolor', 'none', 'markeredgecolor', [0.1 0.1 0.1], 'linewidth', 2, 'markersize', 30, 'erasemode', 'xor', 'tag', 'tgt_all');
-
+    set(xy, 'markerfacecolor', [0.5 0.5 0.5], 'markeredgecolor', [1 1 1], 'linewidth', 2, 'markersize', 7, 'tag', 'xy');            % spatial characteristics of the gaze crosshair during calibration
+    set(tgt, 'markerfacecolor', 'none', 'markeredgecolor', [1 0 0], 'linewidth', 4, 'markersize', 30, 'tag', 'tgt');                % accentuates the target circumfrence by changing it to RED (hope you can see it)
+    set(tgt_all, 'markerfacecolor', 'none', 'markeredgecolor', [0.1 0.1 0.1], 'linewidth', 2, 'markersize', 30, 'tag', 'tgt_all');  % dims (low luminance) the other target locations until they are selected by the program.
+    zzzSetXOREraseMode(xy);
+    zzzSetXOREraseMode(tgt);
+    zzzSetXOREraseMode(tgt_all);
+    
     uicontrol('style', 'pushbutton', 'position', [50 ys-35 150 25], 'string', 'Start Calibration', 'tag', 'startcal', 'callback', 'xycalibrate;');
     uicontrol('style', 'pushbutton', 'position', [50 ys-65 150 25], 'string', 'Exit', 'tag', 'savequit', 'callback', 'xycalibrate;', 'enable', 'on');
     
@@ -142,7 +145,7 @@ if isempty(fig),
     uicontrol('style', 'text', 'position', [30 ys-420 120 18], 'string', 'Space: Process Target', 'backgroundcolor', bg,'horizontalalignment', 'left');
     uicontrol('style', 'text', 'position', [160 ys-420 60 18], 'string', 'Q: Quit', 'backgroundcolor', bg, 'horizontalalignment', 'left');
 
-    uicontrol('style', 'popupmenu', 'position', [60 ys-450 125 20], 'string', {'Min', 'Max', 'Mean', 'Median'}', 'tag', 'calibrationpointtype', 'backgroundcolor', [1 1 1], 'value', 4);
+    uicontrol('style', 'popupmenu', 'position', [60 ys-450 125 20], 'string', {'Min', 'Max', 'Mean', 'Median'}', 'tag', 'calibrationpointtype', 'backgroundcolor', [1 1 1], 'value', 3);
 
     rx = cpsize/xs;
     rxy = (xs+cpsize)/ys;
@@ -284,7 +287,7 @@ elseif ismember(gcbo, get(fig, 'children')),
             
             targetlist = get(findobj(gcf, 'tag', 'targetlist'), 'userdata');
             numtargets = size(targetlist, 1);
-%             targetCalibrated = zeros(1, numtargets);
+            targetCalibrated = zeros(1, numtargets);
             xy = findobj(gcf,'tag', 'xy');
             tgt = findobj(gcf, 'tag', 'tgt');
             tgt_all = findobj(gcf, 'tag', 'tgt_all');
@@ -322,7 +325,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                 end
             else
                 resetDAQflag = 0;
-                 if (~DEBUG_ON_KEYBOARD) %MAC, Jan 2016 -- added to solve issue related to crashes when calibration was initiated during task
+                if (~DEBUG_ON_KEYBOARD) %MAC, Jan 2016 -- added to solve issue related to crashes when calibration was initiated during task
                	 	mlkbd('init'); % disables the keyboard
                     disp('<<< MonkeyLogic >>> Disabled Keyboard');
                 end
@@ -436,7 +439,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                 xlim = get(gca, 'xlim');
                 ylim = get(gca, 'ylim');
                 h = text(0.9*min(xlim), 0.9*min(ylim), 'Current Input: X= ---- V   Y= ---- V');
-                set(h, 'fontname', 'courier', 'fontsize', 12, 'color', [0.2 0.2 0.2], 'tag', 'xytxt_real_time');
+                set(h, 'fontname', 'courier', 'fontsize', 12, 'color', [1.0 1.0 1.0], 'tag', 'xytxt_real_time');
             end
             
             start(DAQ.AnalogInput);
@@ -488,7 +491,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                     
                     [xp yp] = tformfwd(SigTransform, xv, yv);
                     set(xy, 'xdata', xp, 'ydata', yp);
-                    if (refresh_time == 200)
+                    if (refresh_time == 16)
                         xystr = sprintf('Current Input: X= %2.2f V   Y= %2.2f V', xv, yv);
                         set(findobj(gcf, 'tag', 'xytxt_real_time'), 'string', xystr);
                         refresh_time = 0;
@@ -528,8 +531,9 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 
                                 xv = data(firstsample:lastsample, xchan);
                                 yv = data(firstsample:lastsample, ychan);
-
+                                                                                                            
                                	switch calibrationPointTypeIndex,
+
                                     case 1,
                                         disp('<<< MonkeyLogic >>> Using minimum value')
                                         xv = min(xv);
@@ -547,11 +551,7 @@ elseif ismember(gcbo, get(fig, 'children')),
                                         xv = nanmedian(xv);
                                         yv = nanmedian(yv);
                                 end
-                                
-                                % MAIER LAB CUSTOM STERO CALIBRATION CHECK
-                                savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), xv, yv, ScreenInfo); %MAC!
                      
-                                % transform, fixed Jan 30 2016, MAC
                                 cp(targetNum, 1:2) = [xv yv];
                                 SigTransform = updategrid(cp, targetlist);
                                 [xp yp] = tformfwd(SigTransform, xv, yv);
@@ -600,41 +600,35 @@ elseif ismember(gcbo, get(fig, 'children')),
                                 mlvideo('flip', ScreenInfo.Device);
                             end
                             
-                            dotison = 0; 
+                            dotison = 0;
                             pause(0.25);
                             set(xy, 'markerfacecolor', [0.5 0.5 0.5]);
                             set(tgt, 'xdata', ScreenInfo.OutOfBounds, 'ydata', ScreenInfo.OutOfBounds);
-                            
-                            % targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
 
-                            % MAC -- Jan 2106, commented out lines below
-                            % to stop automatic andvancement
-                            % behavior, simmilar to old monkey logic
+                            t2 = maxduration;
                             
-%                             %tries = numtargets;
-%                             
-%                             % [THIS NOTE IS NO LONGER APPLICABLE - MAC ]
-%                             % automatically step to the next stimulus
-%                             % target location after user accepts a
-%                             % calibration point by pressing the space bar
-%                             % (continue to allow the user to press 'p' or
-%                             % 'n' if they wish to cycle through the targets
-%                             % manually. Does not repeat already calibrated
-%                             % targets.
-%                             %while (targetCalibrated(targetNum) == 1)
-%                            
-%                             targetNum = targetNum + 1; THESE ARE THE KEY LINES
-%                             if targetNum > numtargets,
-%                                 targetNum = 1;
-%                             end
-%                             t2 = maxduration;
-% 
-%                             %tries = tries - 1;
-%                             %if (tries == 0)
-%                             % all targets have been calibrated
-%                             %    break;
-%                             %end
-%                             %end
+                            targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
+
+                            %tries = numtargets;
+                            
+                            % automatically step to the next stimulus
+                            % target location after user accepts a
+                            % calibration point by pressing the space bar
+                            % (continue to allow the user to press 'p' or
+                            % 'n' if they wish to cycle through the targets
+                            % manually. Does not repeat already calibrated
+                            % targets.
+                            %while (targetCalibrated(targetNum) == 1)
+                                targetNum = targetNum + 1;
+                                if targetNum > numtargets,
+                                    targetNum = 1;
+                                end
+                                %tries = tries - 1;
+                                %if (tries == 0)
+                                    % all targets have been calibrated
+                                %    break;
+                                %end
+                            %end
                                                         
                         elseif kb == 25, %p for previous
                             t2 = maxduration;
@@ -904,3 +898,12 @@ current_dir = pwd;
 cd(dirs.BaseDirectory);
 system('mlhelper --cursor-enable');
 cd(current_dir);
+
+function zzzSetXOREraseMode(h)
+%Set HG objects EraseMode to 'xor' for legacy MATLAB versions before HG2
+%update in 2014b
+
+if verLessThan('matlab','8.4')
+    set(h,'EraseMode','xor');
+end
+return

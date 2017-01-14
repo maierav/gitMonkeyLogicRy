@@ -12,10 +12,10 @@ function mlmenu(varargin)
 % Modified 3/20/14 -ER (started looking into modifying the DAQ toolbox function calls to handle 64 bit Windows/Matlab)
 % Modified 10/01/15 -ER (added touchscreen/mouse controllers)
 
-lastupdate = 'February 2016';
-currentversion = '02-25-2016 build 1.2.37';
+lastupdate = 'May 2016';
+currentversion = '05-23-2016 build 1.1.85'; 
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -35,7 +35,7 @@ MLPrefs.Directories = getpref('MonkeyLogic', 'Directories');
 validxsize =  [ 320   320    640   768    800    1024   1024  1152  1152   1280     1280   1280   1366   1400    1440   1600   1680     1920     1920   2048  2048  2560       2560    2560    2560    3840    4096];
 validysize =  [ 200   240    480   576    600    600    768   768   864    720      960    1024   768    1050    900    1200   1050     1080     1200   1080  1536  1440       1600    1920    2048    2160    3072];
 validlabels = {'CGA' 'QVGA' 'VGA' 'PAL'  'SVGA' 'WSVGA' 'XGA' '3:2' '4:3'  'HD720'  '4:3'  '5:4'  'HDTV' 'SXGA+' '8:5'  'UGA' 'WSXGA+' 'HD1080' 'WUXGA' '2K'  'QXGA' 'HD1440' 'WQXGA'  '5MEG' 'QSXGA' 'UHDTV'  '4K'};
-validrefresh = [60 72 75 85 100 120 240];
+validrefresh = [60 72 75 85 100 120 144 240];
 
 numvalidsizes = length(validxsize);
 validsizestrings = cell(1, numvalidsizes);
@@ -151,7 +151,7 @@ if isempty(mlf),
     set(gcf, 'closerequestfcn', 'mlmenu; delete(get(0, ''userdata'')); set(0, ''userdata'', ''''); disp(''Closed MonkeyLogic.'')');
     
     mlvideo('mlinit');
-    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized ML Video Graphics interface...')
+    logger.info('mlmenu.m', '<<< MonkeyLogic >>> Initialized Video Graphics interface...')
     
     ybase = 550;
     uicontrol('style', 'frame', 'position', [10 ybase+22 280 80], 'backgroundcolor', 0.85*figbg, 'foregroundcolor', 0.6*figbg);
@@ -2304,7 +2304,7 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                 set(findobj(gcf, 'tag', 'savebutton'), 'enable', 'off');
                 set(findobj(gcf, 'tag', 'menubar_savebutton'), 'enable', 'off');
                 datafile = get(findobj(gcf, 'tag', 'datafile'), 'userdata');
-                if exist(datafile, 'file'),
+               if exist(datafile, 'file'),
                     a = questdlg('Overwrite existing data file?', 'Data file already exists');
                     if strcmpi(a, 'No'),
                         mlmessage('Enter a new data file name to run the task');
@@ -2907,38 +2907,31 @@ elseif ismember(gcbo, get(findobj('tag', 'monkeylogicmainmenu'), 'children')) ||
                     return
                 end
                 
-                avports = AdatorInfo(boardnum).AvailablePorts{subsysnum};
-                avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};
-                
-                nlines = length(avlines);
-                if strcmp('CodesDigOut', iovar),
-                    % first select ports (allows user to select multiple
-                    % ports)
-                    choose_dio_port(avports, 1);
-                    portindx = get(findobj('tag', 'availablechannels'), 'userdata');
-                    if isempty(portindx)
-                        return
-                    end
-                    InputOutput.(iovar).Channel = avports(portindx);
-                    linestoadd = [];
-                    for portindx = portindx(1) : portindx(end)
-                        thisport = avports(portindx);
-                        indx = get(findobj('tag', 'availablechannels'), 'userdata');
-                        if isempty(indx)
-                            return
-                        end
-                        % e.g. nports = 3, nlines = 8: Port0->Lines 0-7,
-                        % Port1->Lines 8-15, Port2->Lines 16-23
-                        linestoadd = [linestoadd avlines(indx) + nlines * thisport]; %#ok<AGROW>
-                    end
-                    InputOutput.(iovar).Line = linestoadd;
-                else
-                    choose_dio_line(avlines);
-                indx = get(findobj('tag', 'availablechannels'), 'userdata');
-                if isempty(indx),
-                    return
-                end
-                InputOutput.(iovar).Line = avlines(indx);
+                        if strcmp('CodesDigOut', iovar),
+                            avports = AdaptorInfo(boardnum).AvailablePorts{subsysnum};
+                            InputOutput.(iovar).Channel = avports(channelindx);
+
+                            nport = length(channelindx);
+                            Line = cell(1,nport);
+                            for m=1:nport
+                                n = channelindx(m);
+                                avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{n};
+                                thisport = avports(n);
+                                choose_dio_line(avlines,1,thisport);
+                                indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                                if isempty(indx), continue; end
+                                Line{m} = avlines(indx);
+                            end
+                    if 1==nport, Line = Line{1}; end
+                            InputOutput.(iovar).Line = Line;
+                        else
+                            avlines = AdaptorInfo(boardnum).AvailableLines{subsysnum}{channelindx};
+                            choose_dio_line(avlines);
+                            indx = get(findobj('tag', 'availablechannels'), 'userdata');
+                            if isempty(indx),
+                                return
+                            end
+                            InputOutput.(iovar).Line = avlines(indx);
                 end
                 
             elseif strcmp('Reward', iovar) && strcmpi(AdaptorInfo(boardnum).SubSystemsNames(subsysnum), 'digitalio'),
@@ -3234,7 +3227,7 @@ uicontrol('style', 'pushbutton', 'position', [92 35 70 30], 'string', 'Cancel', 
 set(gcf, 'closerequestfcn', 'set(findobj(''tag'', ''availablechannels''), ''userdata'', []); delete(gcf)');
 if ~isempty(varargin) && varargin{1},
     set(h, 'max', 2); %enable multi-select
-    if varargin{2}
+    if 1 < length(varargin)
         portnum = varargin{2};
         set(f, 'name', ['Select Lines for Port ', num2str(portnum)]);
     else
@@ -3624,7 +3617,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loadcfg(cfgfile)
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -4225,8 +4218,13 @@ catch
     else
         cfgfile = [MLPrefs.Directories.BaseDirectory 'default_cfg.mat'];
     end
-    logger.info('mlmenu.m', '... Saving new default configuration file ...')
-    save(cfgfile, 'MLConfig');
+    try
+        logger.info('mlmenu.m', '... Saving new default configuration file ...')
+        save(cfgfile, 'MLConfig');
+    catch
+        disp('*** Warning, you need to specify a correct experiment directory path! ***');
+    end
+    
 end
 setpref('MonkeyLogic', 'Directories', MLPrefs.Directories);
 
@@ -4242,7 +4240,9 @@ z = 65536*r+256*g+b;
 rgb = z(:)';
 
 function chknewupdates(lastupdate)
-
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
 checkinterval = 30; %in days
 if ~ispref('MonkeyLogic', 'LastUpdateCheck'),
     lastchecknum = floor(now)-checkinterval-1;

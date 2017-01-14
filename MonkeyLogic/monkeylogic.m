@@ -40,7 +40,7 @@ if isempty(varargin),
     end
     return
 end
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -91,7 +91,7 @@ if exist(cfgfile, 'file'),
         end
     end
    
-    fprintf('<<< MonkeyLogic >>> Using configuration file: %s\n', cfgfile);
+    logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Using configuration file: %s', cfgfile));
     xs = MLConfig.ScreenX;
     ys = MLConfig.ScreenY;
 else
@@ -225,7 +225,7 @@ else %standard task-loop (using a conditions text file and timing files, etc)
             RunTimeFiles{i} = embedtimingfile(tfile, 'trialholder.m');
         catch
             save(errorfile);
-            error('*** Unable to embed timing script(s) ***');
+            logger.info('monkeylogic.m', '*** Unable to embed timing script(s) ***');
         end
     end
     if numtfiles == 1,
@@ -574,7 +574,7 @@ try
         feval(timingfile, TaskObject, TempScreenInfo, DaqInfo, MLConfig.EyeTransform, MLConfig.JoyTransform, BehavioralCodes, TrialRecord, trialtype);
     end
 catch ME
-    fprintf('<<<*** MonkeyLogic ***>>> Initialization Error\n%s\n',getReport(ME));
+    logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> Initialization Error\n%s\n',getReport(ME)));
     cd(MLPrefs.Directories.BaseDirectory);
     enable_cursor;
     enable_syskeys;
@@ -591,7 +591,7 @@ logger.info('monkeylogic.m', sprintf('<<< MonkeyLogic >>> Successfully initializ
 
 if MLConfig.PreloadVideo,
     [preloaded ScreenInfo.PreloadedVideoBuffers] = preload_videos(Conditions,ScreenInfo);
-    fprintf('<<< MonkeyLogic >>> Successfully preloaded video files.\n');
+    logger.info('monkeylogic.m', '<<< MonkeyLogic >>> Successfully preloaded video files');
 else
     preloaded = [];
 end
@@ -929,7 +929,7 @@ for trial = 1:MLConfig.MaxTrials,
                             enable_cursor;
                             enable_syskeys;
                             mlhelper_stop;
-                            fprintf('<<<*** MonkeyLogic ***>>> Condition selection error in user-defined function\n%s\n',getReport(ME));
+                            logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> Condition selection error in user-defined function\n%s\n',getReport(ME)));
                             monkeylogic_alert(4, 'Condition selection error in user-defined function', MLConfig.Alerts);
                             error_escape(ScreenInfo, DaqInfo, fidbhv);
                             clear DaqInfo
@@ -984,7 +984,7 @@ for trial = 1:MLConfig.MaxTrials,
             enable_cursor;
             enable_syskeys;
             mlhelper_stop;
-            fprintf('<<<*** MonkeyLogic ***>>> User-Loop Error\n%s\n',getReport(ME));
+            logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> User-Loop Error\n%s\n',getReport(ME)));
             monkeylogic_alert(4, 'User-Loop Error: Task Halted', MLConfig.Alerts);
             error_escape(ScreenInfo, DaqInfo, fidbhv);
             clear DaqInfo
@@ -1007,7 +1007,7 @@ for trial = 1:MLConfig.MaxTrials,
             enable_cursor;
             enable_syskeys;
             mlhelper_stop;
-            fprintf('<<<*** MonkeyLogic ***>>> User-Loop Error\n%s\n',getReport(ME));
+            logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> User-Loop Error\n%s\n',getReport(ME)));
             monkeylogic_alert(4, 'Unable to embed user-specified timing script', MLConfig.Alerts);
             error_escape(ScreenInfo, DaqInfo, fidbhv);
             clear DaqInfo
@@ -1123,7 +1123,7 @@ for trial = 1:MLConfig.MaxTrials,
     
     if toc*1000 > iti_time,
         iti_t = round(toc*1000);
-        fprintf('*** Warning: Desired ITI exceeded (ITI ~= %i ms) ***\n', iti_t);
+        logger.info('monkeylogic.m', sprintf('*** Warning: Desired ITI exceeded (ITI ~= %i ms) ***\n', iti_t));
         initcontrolscreen(7, ScreenInfo, sprintf('Desired ITI exceeded (ITI ~= %i ms)', iti_t));
     else
         while toc*1000 < iti_time-TrialData.TrialExitTime, end %use up remaining ITI
@@ -1141,7 +1141,7 @@ for trial = 1:MLConfig.MaxTrials,
         enable_cursor;
         enable_syskeys;
         mlhelper_stop;
-        fprintf('<<<*** MonkeyLogic ***>>> Timing File Execution Error\n%s\n',getReport(ME));
+        logger.info('monkeylogic.m', sprintf('<<<*** MonkeyLogic ***>>> Timing File Execution Error\n%s\n',getReport(ME)));
         monkeylogic_alert(4, 'Trial Execution Error: Task Halted', MLConfig.Alerts);
         error_escape(ScreenInfo, DaqInfo, fidbhv);
         clear DaqInfo
@@ -1565,7 +1565,7 @@ if pre && ~gen,
             end
             
         else
-            fprintf('Warning: unable to find preprocessed movie file %s\n', file);
+            logger.info('monkeylogic.m', sprintf('Warning: unable to find preprocessed movie file %s\n', file));
         end
     end
 end
@@ -1729,7 +1729,7 @@ if ~isempty(varargin),
     preloaded = varargin{1};
 end
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -1810,7 +1810,7 @@ for obnum = 1:lc, %first check for user-generated images and movies
             imdata = repmat(imdata, [1 1 3]); %grayscale image;
             C(obnum).Type = 'pic';
         else
-            fprintf('*** WARNING *** image data for "gen" object created by %s contains an unexpected number of dimensions', fname);
+            logger.info('monkeylogic.m', sprintf('*** WARNING *** image data for "gen" object created by %s contains an unexpected number of dimensions', fname));
             imdata = repmat(imdata(:, :, 1), [1 1 3]); % band-aid, to allow task execution to continue
             C(obnum).Type = 'pic';
 		end
@@ -1878,7 +1878,7 @@ for obnum = 1:lc, %first check for user-generated images and movies
         yscreenpos = ScreenInfo.Half_ys - round(ScreenInfo.PixelsPerDegree * ypos) - yoffset; %invert so that positive y is above the horizon
         
         if xscreenpos + xis > ScreenInfo.Xsize || yscreenpos + yis > ScreenInfo.Ysize || xscreenpos < 0 || yscreenpos < 0,
-            fprintf('*** MonkeyLogic Error: Image "%s" is placed outside of screen pixel boundaries.\n', C(obnum).Name);
+            logger.info('monkeylogic.m', sprintf('*** MonkeyLogic Error: Image "%s" is placed outside of screen pixel boundaries.\n', C(obnum).Name));
             error_escape(ScreenInfo, DaqInfo, fidbhv);
             clear DaqInfo
             save(['create_taskobjects_' errorfile]);
@@ -2060,7 +2060,7 @@ vbuffer = vbuffer(1:vbufnum);
 function Instruction = parse_remote_command(RemoteCommand, PassCode)
 persistent lastcommandtime
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -2229,6 +2229,10 @@ set(herror, 'string', errorstring, 'userdata', conderrors);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ScreenInfo = init_video(ScreenInfo)
 
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
+
 ScreenInfo.IsActive = 0;
 try
     mlvideo('init', ScreenInfo.PixelsPerDegree);
@@ -2240,7 +2244,7 @@ try
     mlvideo('showcursor', ScreenInfo.Device, 0);
 
 catch ME
-    fprintf('Video Initialization Error\n%s\n',getReport(ME));
+    logger.info('monkeylogic.m', sprintf('Video Initialization Error\n%s\n',getReport(ME)));
     mlvideo('showcursor', ScreenInfo.Device, 1);
     mlvideo('restoremode', ScreenInfo.Device);
     mlvideo('releasedevice', ScreenInfo.Device);
@@ -2300,6 +2304,9 @@ ScreenInfo.CursorYsize = yis;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ScreenInfo = close_video(ScreenInfo, varargin)
+logger = log4m.getLogger('monkeylogic.log');
+logger.setCommandWindowLevel(logger.ALL); 
+logger.setLogLevel(logger.ALL);
 
 for i = 1:length(ScreenInfo.ActiveVideoBuffers),
     mlvideo('releasebuffer', ScreenInfo.Device, ScreenInfo.ActiveVideoBuffers(i));
@@ -2371,7 +2378,7 @@ function [ScreenInfo, MLConfig, UserChanges] = check_keyboard(MLConfig, EyeSigna
 global MLHELPER_OFF
 global RFM_TASK
 
-logger = log4m.getLogger('log.txt');
+logger = log4m.getLogger('monkeylogic.log');
 logger.setCommandWindowLevel(logger.ALL); 
 logger.setLogLevel(logger.ALL);
 
@@ -2757,7 +2764,7 @@ if ~isempty(thisfig)
 end
 dirs = getpref('MonkeyLogic', 'Directories');
 message = sprintf('%smlhelper --cursor-disable',dirs.BaseDirectory);
-fprintf(message);
+%fprintf(message);
 system(message);
 
 %%
@@ -2773,7 +2780,7 @@ if ~isempty(thisfig)
 end
 dirs = getpref('MonkeyLogic', 'Directories');
 message = sprintf('%smlhelper --cursor-enable',dirs.BaseDirectory);
-fprintf(message);
+%fprintf(message);
 system(message);
 
 %%
