@@ -1,0 +1,31 @@
+Changes with NIMH daqtoolbox, Apr 7, 2016
+
+ + support for pointing devices (mouse, touchscreen, etc.)
+
+Changes with NIMH daqtoolbox, Mar 16, 2016
+
+ + fixed a compatibility issue with old NI-DAQmx versions
+
+Changes with NIMH daqtoolbox, Mar 11, 2016
+
+ + fixed a compatibility issue with Windows 10
+ + switch to Visual Studio 2013 for backward compatibility with old MATLAB versions
+
+Changes with NIMH daqtoolbox, Feb 11, 2016
+
+ + fixed bugs with some NI hardware
+
+Changes with NIMH daqtoolbox, Feb 8, 2016
+
+ + winsound support
+ + better detection of NI products
+
+Changes with NIMH daqtoolbox, Dec 30, 2015
+
+ + parallel port support (read from/write to data port)
+
+Changes with NIMH daqtoolbox, Dec 23, 2015
+
+ + trigger support for analoginput ('Immediate', 'Manual', 'Software')
+ + trigger support for analogoutput ('Immediate', 'Manual')
+ 
