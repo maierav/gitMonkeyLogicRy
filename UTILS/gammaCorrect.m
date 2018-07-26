@@ -49,9 +49,13 @@ switch monitor
         corRGB = ceil(corRGB .* 255);
         
     case '021MIT'
-        RgammaValue = 2.209671458402041;
-        GgammaValue = 2.50982067675356;
-        BgammaValue = 1.83058269411577;
+%         RgammaValue = 2.196721236900493;
+%         GgammaValue = 2.358728059232701;
+%         BgammaValue = 2.142137491570094;
+%         load('C:\Users\MLab\Documents\autogammacorrect\gammaValues.mat');         
+RgammaValue = [2.54770021931163];
+GgammaValue = [3.06558562709144];
+BgammaValue = [2.56930933531134];
         
         if gun == 1
             corRGB = rgbval .^ (1/RgammaValue);

@@ -40,7 +40,7 @@ function result = mlvideo(fxn, varargin)
 
 %%%%%% MAIER LAB CUSTOM GAMMA CORRECTION %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % !! monitor name for gamma correction !! KD Dec 2015 % 
-labmonitor = '022MIT'; %'022NEC';
+labmonitor = '021MIT'; %'022NEC';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 result = [];

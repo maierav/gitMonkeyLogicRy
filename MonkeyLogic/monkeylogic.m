@@ -1475,7 +1475,7 @@ if gen                          % what to do in case the movie to be buffered is
         end
         % Gamma Correction WILL NOT BE APPLIED in ML VIDEO for gen function making movies.
         % APPLY HERE:
-        monitor = '022MIT';
+        monitor = '021MIT';
         Rimdata = gammaCorrect(imdata(:,:,1),monitor,1);
         Gimdata = gammaCorrect(imdata(:,:,2),monitor,2);
         Bimdata = gammaCorrect(imdata(:,:,3),monitor,3);

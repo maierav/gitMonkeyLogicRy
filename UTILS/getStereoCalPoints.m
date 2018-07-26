@@ -5,8 +5,8 @@
 
 % setup array of x and y cordinates
 clear x y tl int
-int = 5;
-y = [5:-int:-5];
+int = 8;
+y = [8:-int:-8];
 x = y;
 tl = combvec(x,y); 
 tl = horzcat([0;0], tl);
@@ -29,16 +29,27 @@ for TOcount = 1:2
     if TOcount == 1
         leftlist = [X;Y];
     elseif TOcount == 2
+        X = X([1 4 3 2 7 6 5 10 9 8]); 
         rightlist = [X;Y];
+        
     end
-    
+
 end
 
-clear new_targetlist
-new_targetlist(:,1) = leftlist(:,1);
-new_targetlist(:,2) = rightlist(:,1);
-for idx = 2:length(y):length(leftlist)
-    new_targetlist = [new_targetlist leftlist(:,idx:idx+length(y)-1)  rightlist(:,idx:idx+length(y)-1)];
+dva_L = [leftlist(1,:) - leftlist(1,1); leftlist(2,:)]'; 
+dva_R = [rightlist(1,:) - rightlist(1,1); rightlist(2,:)]'; 
+rightlist = rightlist'; 
+leftlist  = leftlist'; 
+for i = 1:size(dva_L,1)
+   
+    Lpt = dva_L(i,:); 
+    match_idx = find(ismember(dva_R,Lpt,'rows'));
+    R_match(i) = match_idx(1); 
+    
 end
+new_targetlist = nan(size(dva_L,1)*2,2); 
+new_targetlist([1:2:end-1],:) = leftlist; 
+new_targetlist([2:2:end],:) = rightlist([R_match],:);  
+
     
 clearvars -except rightlist leftlist new_targetlist

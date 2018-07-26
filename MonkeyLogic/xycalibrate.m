@@ -551,7 +551,11 @@ elseif ismember(gcbo, get(fig, 'children')),
                                         xv = nanmedian(xv);
                                         yv = nanmedian(yv);
                                 end
+                                
+                                % MAIER LAB CUSTOM STERO CALIBRATION CHECK
+                                savestereoeyecal(targetlist(targetNum,1), targetlist(targetNum,2), xv, yv, ScreenInfo); %MAC!
                      
+                                % transform, fixed Jan 30 2016, MAC
                                 cp(targetNum, 1:2) = [xv yv];
                                 SigTransform = updategrid(cp, targetlist);
                                 [xp yp] = tformfwd(SigTransform, xv, yv);
@@ -609,26 +613,34 @@ elseif ismember(gcbo, get(fig, 'children')),
                             
                             targetCalibrated(targetNum) = 1; % record that this target has been calibrated and do not repeat its presentation unless the user manually selects it using next or previous.
 
-                            %tries = numtargets;
+                            % MAC -- Jan 2106, commented out lines below
+                            % to stop automatic andvancement
+                            % behavior, simmilar to old monkey logic
                             
-                            % automatically step to the next stimulus
-                            % target location after user accepts a
-                            % calibration point by pressing the space bar
-                            % (continue to allow the user to press 'p' or
-                            % 'n' if they wish to cycle through the targets
-                            % manually. Does not repeat already calibrated
-                            % targets.
-                            %while (targetCalibrated(targetNum) == 1)
-                                targetNum = targetNum + 1;
-                                if targetNum > numtargets,
-                                    targetNum = 1;
-                                end
-                                %tries = tries - 1;
-                                %if (tries == 0)
-                                    % all targets have been calibrated
-                                %    break;
-                                %end
-                            %end
+%                             %tries = numtargets;
+%                             
+%                             % automatically step to the next stimulus
+%                             % target location after user accepts a
+%                             % calibration point by pressing the space bar
+%                             % (continue to allow the user to press 'p' or
+%                             % [THIS NOTE IS NO LONGER APPLICABLE - MAC ]
+%                             % 'n' if they wish to cycle through the targets
+%                             % manually. Does not repeat already calibrated
+%                             % targets.
+%                             %while (targetCalibrated(targetNum) == 1)
+%                            
+%                             if targetNum > numtargets,
+%                                 targetNum = 1;
+%                             end
+%                             %tries = tries - 1;
+%                             %if (tries == 0)
+%                             targetNum = targetNum + 1; THESE ARE THE KEY LINES
+%                             % all targets have been calibrated
+%                             %    break;
+%                             %end
+%                             t2 = maxduration;
+% 
+%                             %end
                                                         
                         elseif kb == 25, %p for previous
                             t2 = maxduration;
